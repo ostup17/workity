@@ -9,6 +9,47 @@ class RegisterScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  void _registerUser(BuildContext context) {
+  final email = emailController.text.trim();
+  final password = passwordController.text.trim();
+
+  // Проверяем, чтобы email и пароль не были пустыми
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Email и пароль не могут быть пустыми.')),
+    );
+    return;
+  }
+
+  // Проверяем корректность email
+  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Введите корректный email.')),
+    );
+    return;
+  }
+
+  // Проверяем длину пароля
+  if (password.length < 6) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Пароль должен быть не менее 6 символов.')),
+    );
+    return;
+  }
+
+  // Логируем отправляемые данные для отладки
+  print('Отправка на регистрацию: Email: $email, Password: $password');
+
+  // Отправляем событие регистрации
+  context.read<AuthBloc>().add(
+        AuthRegisterEvent(
+          email: email,
+          password: password,
+        ),
+      );
+}
+
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -49,16 +90,21 @@ class RegisterScreen extends StatelessWidget {
                   if (state is AuthLoading) {
                     return CircularProgressIndicator();
                   }
-                  return ElevatedButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                            LoginEvent(
-                              emailController.text,
-                              passwordController.text,
-                            ),
-                          );
-                    },
-                    child: Text('Register'),
+                  return Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          _registerUser(context);
+                        },
+                        child: Text('Register'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/');
+                        },
+                        child: Text('У меня уже есть аккаунт'),
+                      ),
+                    ],
                   );
                 },
               )

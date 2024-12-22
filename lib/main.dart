@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'domain/usecases/login_user.dart';
+import 'domain/usecases/register_user.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'data/repositories/auth_repository.dart';
 import 'presentation/screens/login_screen.dart';
@@ -24,7 +25,10 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => AuthBloc(LoginUser(AuthRepository())),
+          create: (_) => AuthBloc(
+            LoginUser(AuthRepository()),
+            RegisterUser(AuthRepository()),
+          ),
         ),
       ],
       child: MaterialApp(

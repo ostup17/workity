@@ -48,16 +48,26 @@ class LoginScreen extends StatelessWidget {
                   if (state is AuthLoading) {
                     return CircularProgressIndicator();
                   }
-                  return ElevatedButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                            LoginEvent(
-                              emailController.text,
-                              passwordController.text,
-                            ),
-                          );
-                    },
-                    child: Text('Login'),
+                  return Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<AuthBloc>().add(
+                                LoginEvent(
+                                  emailController.text,
+                                  passwordController.text,
+                                ),
+                              );
+                        },
+                        child: Text('Login'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        child: Text('Зарегистрироваться'),
+                      ),
+                    ],
                   );
                 },
               )

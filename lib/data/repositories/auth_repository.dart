@@ -16,4 +16,27 @@ class AuthRepository {
   Future<User?> getCurrentUser() async {
     return _auth.currentUser;
   }
+
+Future<User?> registerWithEmailPassword(String email, String password) async {
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw Exception('Этот email уже используется.');
+      } else if (e.code == 'weak-password') {
+        throw Exception('Пароль слишком слабый.');
+      } else if (e.code == 'invalid-email') {
+        throw Exception('Некорректный формат email.');
+      } else {
+        throw Exception('Ошибка регистрации: ${e.message}');
+      }
+    }
+  }
+
 }
+
+
