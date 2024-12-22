@@ -10,49 +10,59 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            BlocConsumer<AuthBloc, AuthState>(
-              listener: (context, state) {
-                if (state is AuthAuthenticated) {
-                  Navigator.pushNamed(context, '/home');
-                } else if (state is AuthError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.message)),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        // Блокируем возможность возврата
+        print("Blocked back navigation on Login screen");
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text('Login')),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthAuthenticated) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/home',
+                      (Route<dynamic> route) => false,
+                    );
+                  } else if (state is AuthError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message)),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return CircularProgressIndicator();
+                  }
+                  return ElevatedButton(
+                    onPressed: () {
+                      context.read<AuthBloc>().add(
+                            LoginEvent(
+                              emailController.text,
+                              passwordController.text,
+                            ),
+                          );
+                    },
+                    child: Text('Login'),
                   );
-                }
-              },
-              builder: (context, state) {
-                if (state is AuthLoading) {
-                  return CircularProgressIndicator();
-                }
-                return ElevatedButton(
-                  onPressed: () {
-                    context.read<AuthBloc>().add(
-                          LoginEvent(
-                            emailController.text,
-                            passwordController.text,
-                          ),
-                        );
-                  },
-                  child: Text('Login'),
-                );
-              },
-            )
-          ],
+                },
+              )
+            ],
+          ),
         ),
       ),
     );
