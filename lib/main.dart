@@ -11,23 +11,26 @@ import 'presentation/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp();
-    runApp(MyApp());
-  } catch (e) {
-    print('Firebase initialization error: $e');
-  }
+  await Firebase.initializeApp();
+
+  final authRepository = AuthRepository();
+
+  runApp(MyApp(authRepository: authRepository));
 }
 
 class MyApp extends StatelessWidget {
+  final AuthRepository authRepository;
+
+  MyApp({required this.authRepository});
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
           create: (_) => AuthBloc(
-            LoginUser(AuthRepository()),
-            RegisterUser(AuthRepository()),
+            LoginUser(authRepository),
+            RegisterUser(authRepository),
           ),
         ),
       ],
