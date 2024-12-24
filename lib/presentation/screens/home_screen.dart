@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../domain/entities/user.dart' as app_user;
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
-import '../../../domain/entities/user.dart' as app_user;
 import '../widgets/loading_indicator.dart';
-
-
+import 'performer_screens/create_service_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
-   Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthAuthenticated) {
@@ -33,6 +31,21 @@ class HomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Привет ${user.activeRole == app_user.UserRole.performer ? 'Исполнитель' : 'Заказчик'}!'),
+                  if (user.activeRole == app_user.UserRole.performer)
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BlocProvider.value(
+                              value: BlocProvider.of<AuthBloc>(context),
+                              child: CreateServiceScreen(),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('Создать услугу'),
+                    ),
                   SwitchListTile(
                     title: Text('Переключить роль'),
                     value: user.activeRole == app_user.UserRole.performer,
@@ -48,14 +61,13 @@ class HomeScreen extends StatelessWidget {
             ),
           );
         } else if (state is AuthLoading) {
-          return const Scaffold(
-            body: LoadingIndicator()
+          return Scaffold(
+            body: const LoadingIndicator(),
           );
         } else {
-          return const LoadingIndicator();;
+          return const LoadingIndicator();
         }
       },
     );
   }
 }
-
