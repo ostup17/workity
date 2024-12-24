@@ -5,12 +5,13 @@ import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../../../domain/entities/user.dart' as app_user;
+import '../widgets/loading_indicator.dart';
 
 
 
 class HomeScreen extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthAuthenticated) {
@@ -46,10 +47,15 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           );
+        } else if (state is AuthLoading) {
+          return const Scaffold(
+            body: LoadingIndicator()
+          );
         } else {
-          return Center(child: CircularProgressIndicator());
+          return const LoadingIndicator();;
         }
       },
     );
   }
 }
+

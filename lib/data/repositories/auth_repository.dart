@@ -35,6 +35,7 @@ class AuthRepository {
     await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
       'roles': [roleString],
       'activeRole': roleString,
+      'email': userCredential.user!.email, // Добавляем email
     });
     return app_user.User(
       id: userCredential.user!.uid,
