@@ -6,8 +6,6 @@ import '../../blocs/create_service/create_service_bloc.dart';
 import '../../blocs/create_service/create_service_event.dart';
 import '../../blocs/create_service/create_service_state.dart';
 
-import '../../../domain/entities/user.dart' as app_user;
-
 
 class CreateServiceScreen extends StatefulWidget {
   final String userEmail;
@@ -159,14 +157,15 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                     final serviceData = {
                       'title': titleController.text.trim(),
                       'description': descriptionController.text.trim(),
-                      'price': double.parse(priceController.text.trim()),
+                      'price': double.tryParse(priceController.text.trim()) ?? 0,
                       'currency': selectedCurrency,
                       'unit': unitController.text.trim(),
                       'category': selectedCategory,
-                      'createdBy': widget.userEmail, // Используем email из конструктора
+                      'createdBy': widget.userEmail, // Email пользователя
                       'createdAt': FieldValue.serverTimestamp(),
                     };
 
+                    print('Service data to be submitted: $serviceData'); // Лог перед отправкой
                     context.read<CreateServiceBloc>().add(SubmitServiceEvent(serviceData));
                   },
                   child: Text('Создать услугу'),
