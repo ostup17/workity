@@ -6,7 +6,14 @@ import '../../blocs/create_service/create_service_bloc.dart';
 import '../../blocs/create_service/create_service_event.dart';
 import '../../blocs/create_service/create_service_state.dart';
 
+import '../../../domain/entities/user.dart' as app_user;
+
+
 class CreateServiceScreen extends StatefulWidget {
+  final String userEmail;
+
+  CreateServiceScreen({required this.userEmail});
+
   @override
   _CreateServiceScreenState createState() => _CreateServiceScreenState();
 }
@@ -48,35 +55,33 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
             );
           }
         },
-        child: BlocBuilder<CreateServiceBloc, CreateServiceState>(
-          builder: (context, state) {
-            if (state is CreateServiceLoadingCategories) {
-              return Center(child: CircularProgressIndicator());
-            } else if (state is CreateServiceCategoriesLoaded) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          labelText: 'Название услуги',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: descriptionController,
-                        decoration: InputDecoration(
-                          labelText: 'Описание услуги',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    labelText: 'Название услуги',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: descriptionController,
+                  decoration: InputDecoration(
+                    labelText: 'Описание услуги',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                BlocBuilder<CreateServiceBloc, CreateServiceState>(
+                  builder: (context, state) {
+                    if (state is CreateServiceCategoriesLoaded) {
+                      return DropdownButtonFormField<String>(
                         value: selectedCategory,
                         items: state.categories.map((category) {
                           return DropdownMenuItem(
@@ -93,83 +98,86 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                           labelText: 'Категория',
                           border: OutlineInputBorder(),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: priceController,
-                        decoration: InputDecoration(
-                          labelText: 'Стоимость',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        value: selectedCurrency,
-                        items: ['Сом', 'Доллар'].map((currency) {
-                          return DropdownMenuItem(
-                            value: currency,
-                            child: Text(currency),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCurrency = value!;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Валюта',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: unitController,
-                        decoration: InputDecoration(
-                          labelText: 'За что идет цена (например, килограмм, метр)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (titleController.text.isEmpty ||
-                              descriptionController.text.isEmpty ||
-                              priceController.text.isEmpty ||
-                              unitController.text.isEmpty ||
-                              selectedCategory == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Пожалуйста, заполните все обязательные поля')),
-                            );
-                            return;
-                          }
-
-                          final serviceData = {
-                            'title': titleController.text.trim(),
-                            'description': descriptionController.text.trim(),
-                            'price': double.parse(priceController.text.trim()),
-                            'currency': selectedCurrency,
-                            'unit': unitController.text.trim(),
-                            'category': selectedCategory,
-                            'createdBy': 'user_id_placeholder',
-                            'createdAt': FieldValue.serverTimestamp(),
-                          };
-
-                          context.read<CreateServiceBloc>().add(SubmitServiceEvent(serviceData));
-                        },
-                        child: Text('Создать услугу'),
-                      ),
-                    ],
+                      );
+                    } else if (state is CreateServiceLoadingCategories) {
+                      return Center(child: CircularProgressIndicator());
+                    } else {
+                      return Text('Ошибка загрузки категорий');
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: priceController,
+                  decoration: InputDecoration(
+                    labelText: 'Стоимость',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedCurrency,
+                  items: ['Сом', 'Доллар'].map((currency) {
+                    return DropdownMenuItem(
+                      value: currency,
+                      child: Text(currency),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedCurrency = value!;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Валюта',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-              );
-            } else {
-              return Text('Ошибка загрузки категорий');
-            }
-          },
+                const SizedBox(height: 16),
+                TextField(
+                  controller: unitController,
+                  decoration: InputDecoration(
+                    labelText: 'За что идет цена (например, килограмм, метр)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    if (titleController.text.isEmpty ||
+                        descriptionController.text.isEmpty ||
+                        priceController.text.isEmpty ||
+                        unitController.text.isEmpty ||
+                        selectedCategory == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Пожалуйста, заполните все обязательные поля')),
+                      );
+                      return;
+                    }
+
+                    final serviceData = {
+                      'title': titleController.text.trim(),
+                      'description': descriptionController.text.trim(),
+                      'price': double.parse(priceController.text.trim()),
+                      'currency': selectedCurrency,
+                      'unit': unitController.text.trim(),
+                      'category': selectedCategory,
+                      'createdBy': widget.userEmail, // Используем email из конструктора
+                      'createdAt': FieldValue.serverTimestamp(),
+                    };
+
+                    context.read<CreateServiceBloc>().add(SubmitServiceEvent(serviceData));
+                  },
+                  child: Text('Создать услугу'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
+
 
